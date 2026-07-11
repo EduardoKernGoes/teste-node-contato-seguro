@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <link rel="stylesheet" href="/styles/login.css">
+    </head>
+    <body>
+        <main>
+            <h1>Seja Bem-Vindo(a)!!!</h1>
+            <form action="/verifies-user-data" method="post">
+                <div>
+                    <label>
+                        Usuário ou e-mail:
+                    </label>
+                    <input type="text" name="user">
+                </div>
+                <div>
+                    <label>
+                        Senha
+                    </label>
+                    <input type="password" name="password">
+                </div>
+                <button class="btn" type="submit">Entrar</button>
+                <a class="btn">Fazer Cadastro</a>
+            </form>
+        </main>
+    </body>
+</html>

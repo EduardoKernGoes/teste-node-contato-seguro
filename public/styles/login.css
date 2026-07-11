@@ -1,0 +1,49 @@
+@import url('./global.css');
+
+main{
+    width: 400px;
+    margin: 40px auto 0 auto;
+    background: rgb(220, 220, 220);
+    border-radius: 10px;
+    padding: 20px 10px;
+}
+
+main>h1{
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+form{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+form div{
+    display: flex;
+    flex-direction: column;
+}
+
+.btn {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 70%;
+    
+    text-align: center;
+    font-family: inherit;
+    font-size: 16px;
+    
+    margin: 0 auto;
+    padding: 10px 20px;
+    background-color: rgb(0, 123, 255);
+    color: rgb(220, 220, 220);
+    border: none;
+    border-radius: 6px;
+    
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
