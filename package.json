@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules npx jest",
     "dev": "node server.js"
   },
   "keywords": [],
@@ -17,6 +17,7 @@
     "prisma": "^5.22.0"
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "jest": "^30.4.2"
   }
 }
