@@ -1,10 +1,9 @@
 const form = document.querySelector('form')
 
 form.addEventListener('submit', async (event) => {
-    console.log('teste de envio do formulario')
     event.preventDefault()
 
-    const user = form.user.value
+    const email = form.email.value
     const password = form.password.value
 
     try{
@@ -13,7 +12,7 @@ form.addEventListener('submit', async (event) => {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({user, password})
+            body: JSON.stringify({email, password})
         })
 
         const data = await response.json()
