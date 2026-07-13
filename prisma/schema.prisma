@@ -20,6 +20,7 @@ model User {
 
 model Ticket {
   id          Int      @id @default(autoincrement())
+  title       String
   description String
   channel     String
   status      String   @default("Aberto")

@@ -3,24 +3,20 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { classifyPriorityChannel } from './utils/classifyTickets';
 
 const prisma = new PrismaClient()
 
 const server = express()
 const port = 3000
 
-server.use(express.urlencoded({extended: true}))
-server.use(express.json())
-
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-server.use(express.static(path.join(dirname, "public")))
+server.use(express.urlencoded({extended: true}))
+server.use(express.json())
 
-server.get("/open-ticket.html", (req, res) =>{
-   console.log('um teste foi feito')
-   return res.status(201).sendFile(path.join(dirname, "public/pages/open-ticket.html"))
-})
+server.use(express.static(path.join(dirname, "public")))
 
 server.post("/login", async (req, res) => {
    const { email, password } = req.body;
@@ -80,6 +76,25 @@ server.post("/create-account", async (req, res) => {
    })
 })
 
+server.post("/open-ticket", async (req, res) =>{
+   const { userID, title, description } = req.body
+   console.log("Dados recebidos da criação do ticket: ", userID, title, description)
+
+   const { channel, priority } = classifyPriorityChannel(description)
+
+   let response = await createTicket(userID, title, description, channel, priority)
+
+   console.log(response)
+
+   if(response === null){
+      return res.status(500).json({error: "Erro interno"})
+   }else if (!response){
+      return res.status(400).json({error: "Erro ao tentar criar o chamado, verifique as informações do mesmo."})
+   }
+
+   return res.status(201).json({message: "Chamado criado com sucesso!"})
+})
+
 server.listen(port, () => {
    console.log(`Server is running on: http://localhost:${port}`)
 })
@@ -130,5 +145,33 @@ async function createUser(user, email, password){
          console.log('ERRO NA CRIAÇÃO DE USUÁRIO: ', error)
          return null
       }
+   }
+}
+
+async function createTicket(userID, title, description, channel, priority){
+   let ticketData = {
+      title,
+      description,
+      channel,
+      priority,
+      status: "OPEN",
+      customerId: parseInt(userID)
+   }
+
+   console.log("Dados do chamado:", ticketData)
+
+   try{
+      let ticket = await prisma.ticket.create({data: ticketData})
+
+      console.log(ticket)
+
+      if(ticket.id && ticket.description === description && ticket.title === title){
+         return true
+      }else{
+         return false
+      }
+   } catch (error){
+      console.log('ERRO NA CRIAÇÃO DO CHAMADO: ', error)
+      return null
    }
 }
