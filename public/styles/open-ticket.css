@@ -1,2 +1,42 @@
 @import url('./global.css');
 @import url('./header.css');
+
+form{
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+label{
+    font-size: 2rem;
+}
+
+#title{
+    padding: 3px 7px;
+    margin: 5px;
+    font-size: 1.5rem;
+    border: none;
+    background: rgb(230, 230, 230);
+    border-radius: 20px;
+}
+
+#title:focus{
+    border: 1px solid rgb(200, 200, 200);
+    outline: none;
+}
+
+#description{
+    height: 400px;
+    font-size: 1.2rem;
+    resize: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+button{
+    font-size: 1.3rem;
+    padding: 5px 10px;
+    width: min-content;
+    margin: 0 auto;
+}

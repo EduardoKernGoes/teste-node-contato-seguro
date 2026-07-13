@@ -1,14 +1,27 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abrir Chamado</title>
-    <link rel="stylesheet" href="/styles/open-ticket.css">
-    <script src="/components/header.js"></script>
-</head>
-<body>
-    <site-header></site-header>
-    <h1>Abrir chamado</h1>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Abrir Chamado</title>
+        <link rel="stylesheet" href="/styles/open-ticket.css">
+        <script src="/components/header.js"></script>
+    </head>
+    <body>
+        <site-header></site-header>
+        <main>
+            <form>
+                <div>
+                    <label for="title">Título:</label>
+                    <input id="title" type="text" name="title">
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                    <label for="description">Descrição:</label>
+                    <textarea id="description" type="text" name="description"></textarea>
+                </div>
+                <button type="submit">Enviar</button>
+            </form>
+        </main>
+        <script src="/scripts/open-ticket.js"></script>
+    </body>
 </html>
