@@ -1,24 +1,21 @@
-import express from 'express'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import express from 'express';
 import { PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { classifyPriorityChannel } from './utils/classifyTickets.js';
 import { calculateTicketHealth } from './utils/ticketHealth.js';
-import { count } from 'console';
+import ticketRouter from './routes/ticketRoutes.js';
+// import userRouter from './routes/userRoutes.js';
 
 const prisma = new PrismaClient()
 
 const server = express()
 const port = 3000
 
-const filename = fileURLToPath(import.meta.url)
-const dirname = path.dirname(filename)
-
-server.use(express.urlencoded({extended: true}))
+// server.use(express.urlencoded({extended: true}))
 server.use(express.json())
 
-server.use(express.static(path.join(dirname, "public")))
+server.use('/tickets', ticketRouter)
+// server.use('/users', userRouter)
 
 server.post("/users", async (req, res) => {
    const {user, email, password, repeat_password} = req.body;
@@ -120,31 +117,9 @@ server.delete("/users/:id", async (req, res) => {
    return res.status(200).json({message: "Usuário excluido com sucesso."})
 })
 
-server.post("/tickets", async (req, res) =>{
-   const { userID, title, description } = req.body
-
-   let id = parseInt(userID)
-
-   if(isNaN(id)){
-      return res.status(400).json({error: "ID inválido. O ID deve ser um número"})
-   }
-
-   const { channel, priority } = classifyPriorityChannel(description)
-
-   console.info("Dados da criação do ticket: ", userID, title, description, channel, priority)
-
-   let response = await createTicket(userID, title, description, channel, priority)
-
-   console.log(response)
-
-   if(response === null){
-      return res.status(500).json({error: "Erro interno"})
-   }else if (!response){
-      return res.status(400).json({error: "Erro ao tentar criar o chamado, verifique as informações do mesmo."})
-   }
-
-   return res.status(201).json({message: "Chamado criado com sucesso!"})
-})
+// server.post("/tickets", async (req, res) =>{
+   
+// })
 
 server.get("/tickets", async (req, res) => {
 
