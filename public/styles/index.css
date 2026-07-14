@@ -1,2 +1,23 @@
 @import url('./global.css');
 @import url('./header.css');
+
+.ticket{
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 50px;
+    background: rgb(210, 210, 210);
+    padding: 10px 20px;
+    border-radius: 10px;
+}
+
+.OPEN{
+    border-bottom: 5px solid rgb(0, 0, 230);
+}
+
+.IN-PROGRESS{
+    border-bottom: 5px solid rgb(230, 230, 0);
+}
+
+.COMPLETED{
+    border-bottom: 5px solid rgb(0, 230, 0);
+}

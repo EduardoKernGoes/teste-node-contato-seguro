@@ -27,6 +27,19 @@ describe("Testes Banco de Dados - Tabela Chamados", () =>{
         expect(createdTicket.priority).toBe(priority)
     })
 
+    it("Deve buscar os chamados de apenas um usuário, junto com suas informações", async() => {
+        const ticketsData = await prisma.ticket.findMany({
+            where: {
+                customerId: 1
+            },
+            include: {
+                customer: true
+            }
+        })
+
+        expect(ticketsData)
+    })
+
     afterAll(async () =>{
         await prisma.$disconnect()
     })

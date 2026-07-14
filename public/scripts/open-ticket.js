@@ -8,7 +8,7 @@ form.addEventListener('submit', async (event) => {
     const userID = localStorage.getItem('id')
 
     try{
-        const response = await fetch('/open-ticket', {
+        const response = await fetch('/tickets', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

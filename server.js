@@ -3,7 +3,8 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { classifyPriorityChannel } from './utils/classifyTickets';
+import { classifyPriorityChannel } from './utils/classifyTickets.js';
+import { count } from 'console';
 
 const prisma = new PrismaClient()
 
@@ -39,7 +40,7 @@ server.post("/login", async (req, res) => {
    }
 })
 
-server.post("/create-account", async (req, res) => {
+server.post("/users", async (req, res) => {
    const {user, email, password, repeat_password} = req.body;
    console.log("Dados recebidos do usuário: ", user, email, password, repeat_password);
 
@@ -76,7 +77,7 @@ server.post("/create-account", async (req, res) => {
    })
 })
 
-server.post("/open-ticket", async (req, res) =>{
+server.post("/tickets", async (req, res) =>{
    const { userID, title, description } = req.body
    console.log("Dados recebidos da criação do ticket: ", userID, title, description)
 
@@ -93,6 +94,30 @@ server.post("/open-ticket", async (req, res) =>{
    }
 
    return res.status(201).json({message: "Chamado criado com sucesso!"})
+})
+
+server.get("/tickets", async (req, res) => {
+   console.log("solicitação dos tickets")
+
+   let ticketsData = await getTickets()
+
+   if(ticketsData === null){
+      res.status(500).json({error: "Erro no servidor"})
+   }
+
+   return res.status(200).json(ticketsData)
+})
+
+server.get("/tickets/:id", async (req, res) => {
+   let ticketID = req.params.id
+
+   let ticketData = await getTicketByID(ticketID)
+
+   return res.status(200).json({ticketData})
+})
+
+server.put("/tickets/:id/status", async (req, res) => {
+   console.log("Atualizou o status do chamado")
 })
 
 server.listen(port, () => {
@@ -172,6 +197,45 @@ async function createTicket(userID, title, description, channel, priority){
       }
    } catch (error){
       console.log('ERRO NA CRIAÇÃO DO CHAMADO: ', error)
+      return null
+   }
+}
+
+async function getTickets(){
+   try{
+      let ticketsData = await prisma.ticket.findMany({
+         include: {
+            customer: {
+               select: {
+                  email: true
+               }
+            }
+         }
+      })
+
+      return ticketsData
+
+   } catch (error){
+      console.log('ERRO NA BUSCA DE TICKETS DO USUÁRIO: ', error)
+      return null
+   }
+}
+
+async function getTicketByID(ID){
+   try{
+      let ticketData = await prisma.ticket.findUnique({
+         where: {
+            id: parseInt(ID)
+         },
+         include: {
+            customer: true
+         }
+      })
+
+      return ticketData
+
+   } catch (error){
+      console.log("ERRO NA BUSCA DO TICKET POR ID: ", error)
       return null
    }
 }
