@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url'
 import { PrismaClient } from "@prisma/client";
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { classifyPriorityChannel } from './utils/classifyTickets.js';
+import { calculateTicketHealth } from './utils/ticketHealth.js';
 import { count } from 'console';
 
 const prisma = new PrismaClient()
@@ -21,21 +22,16 @@ server.use(express.static(path.join(dirname, "public")))
 
 server.post("/users", async (req, res) => {
    const {user, email, password, repeat_password} = req.body;
-   console.log("Dados recebidos do usuário: ", user, email, password, repeat_password);
 
-   switch(true){
-      case password != repeat_password:
-         return res.status(400).json({error: "Senhas não coincidem"})
-         break;
-
-      case !user || !email || !password || !repeat_password:
-         return res.status(400).json({error: "O formulário não pode ter itens vazios"})
-         break;
-
-      case !email.includes('@'):
-         return res.status(400).json({error: "E-mail inválido"})
-         break;
+   if(password != repeat_password){
+      return res.status(400).json({error: "Senhas não coincidem"})
+   }else if(!user || !email || !password || !repeat_password){
+      return res.status(400).json({error: "O formulário não pode ter itens vazios"})
+   }else if(!email.includes('@')){
+      return res.status(400).json({error: "E-mail inválido"})
    }
+
+   console.info("Dados de criação do usuário: ", user, email, password, repeat_password);
 
    let userData = await createUser(user, email, password)
 
@@ -69,7 +65,7 @@ server.get("/users/:id", async (req, res) => {
       return res.status(400).json({error: "ID inválido. O ID deve ser um número"})
    }
 
-   console.log('Solicitação do usuário: ', userID)
+   console.info('Solicitação do usuário: ', userID)
 
    let userData = await getUserById(userID)
 
@@ -84,8 +80,13 @@ server.get("/users/:id", async (req, res) => {
 
 server.put("/users/:id", async (req, res) => {
    let { user, email, password } = req.body
-   let userID = req.params.id
-   console.log('Solicitação de alteração do usuário: ', userID, user, email, password)
+   let userID = parseInt(req.params.id)
+
+   if(isNaN(userID)){
+      return res.status(400).json({error: "ID inválido. O ID deve ser um número"})
+   }
+
+   console.info('Dados da solicitação de alteração do usuário: ', userID, user, email, password)
 
    let response = await updateUser(userID, user, email, password)
 
@@ -100,8 +101,13 @@ server.put("/users/:id", async (req, res) => {
 })
 
 server.delete("/users/:id", async (req, res) => {
-   let userID = req.params.id
-   console.log('Solicitação de exclusão do usuário: ', userID)
+   let userID = parseInt(req.params.id)
+
+   if(isNaN(userID)){
+      return res.status(400).json({error: "ID inválido. O ID deve ser um número"})
+   }
+
+   console.info('Solicitação de exclusão do usuário: ', userID)
 
    let response = await deleteUser(userID)
 
@@ -116,9 +122,16 @@ server.delete("/users/:id", async (req, res) => {
 
 server.post("/tickets", async (req, res) =>{
    const { userID, title, description } = req.body
-   console.log("Dados recebidos da criação do ticket: ", userID, title, description)
+
+   let id = parseInt(userID)
+
+   if(isNaN(id)){
+      return res.status(400).json({error: "ID inválido. O ID deve ser um número"})
+   }
 
    const { channel, priority } = classifyPriorityChannel(description)
+
+   console.info("Dados da criação do ticket: ", userID, title, description, channel, priority)
 
    let response = await createTicket(userID, title, description, channel, priority)
 
@@ -134,7 +147,6 @@ server.post("/tickets", async (req, res) =>{
 })
 
 server.get("/tickets", async (req, res) => {
-   console.log("solicitação dos tickets")
 
    let ticketsData = await getTickets()
 
@@ -146,20 +158,34 @@ server.get("/tickets", async (req, res) => {
 })
 
 server.get("/tickets/:id", async (req, res) => {
-   let ticketID = req.params.id
-   console.log("solicitação do ticket: ", ticketID)
+   let ticketID = parseInt(req.params.id)
+
+   if(isNaN(ticketID)){
+      return res.status(400).json({error: "ID inválido. O ID deve ser um número"})
+   }
+
+   console.info("Solicitação do ticket: ", ticketID)
 
    let ticketData = await getTicketByID(ticketID)
+
+   if(!ticketData){
+      return res.status(400).json({error: "Ticket não encontrado"})
+   }
 
    return res.status(200).json(ticketData)
 })
 
 server.put("/tickets/:id/status", async (req, res) => {
    const { priority, channel, status } = req.body
-   const id = req.params.id
-   console.log("Atualizou o status do chamado: ", id, priority, channel, status)
+   let ticketID = parseInt(req.params.id)
 
-   let response = await updateTicketStatus(id, priority, channel, status)
+   if(isNaN(ticketID)){
+      return res.status(400).json({error: "ID inválido. O ID deve ser um número"})
+   }
+
+   console.info("Dados de atualização do chamado: ", ticketID, priority, channel, status)
+
+   let response = await updateTicket(ticketID, priority, channel, status)
 
    if(response === null){
       return res.status(500).json({error: "Erro no servidor ao tentar ataulizar chamado"})
@@ -171,25 +197,32 @@ server.put("/tickets/:id/status", async (req, res) => {
 })
 
 server.get("/health", async (req, res) => {
-   try{
-      await prisma.$queryRaw`SELECT 1`
-      return res.status(200).json({
-         message: "Servidor e Banco de Dados funcionando."
-      })
-   } catch (error){
-      return res.status(500).json({
-         message: "Banco de Dados indisponível"
-      })
+   let { id } = req.query
+   let ticketID = parseInt(id)
+
+   if(isNaN(ticketID)){
+      return res.status(400).json({error: "ID inválido. O ID deve ser um número"})
    }
+
+   let ticketData = await getTicketByID(ticketID)
+
+   if(!ticketData){
+      return res.status(400).json({error: "Ticket não encontrado"})
+   }
+
+   let ticketHealth = calculateTicketHealth(ticketData)
+
+   return res.status(200).json({ticketData, ticketHealth})
+
 })
 
 server.listen(port, () => {
    console.log(`Server is running on: http://localhost:${port}`)
 })
 
-async function createUser(user, email, password){
+async function createUser(name, email, password){
    let userData = {
-      name: user,
+      name,
       email,
       password,
       role: 'CLIENT'
@@ -198,18 +231,14 @@ async function createUser(user, email, password){
    try{
       let user = await prisma.user.create({data: userData})
 
-      if(user.id && user.email === email && user.role === 'CLIENT'){
-         return userData
-      }else{
-         return false
-      }
+      console.log("Usuário criado: ", user);
 
-      console.log(user);
+      return user
    } catch (error){
       if(error instanceof PrismaClientKnownRequestError){
          return false
       }else{
-         console.log('ERRO NA CRIAÇÃO DE USUÁRIO: ', error)
+         console.error('ERRO NA CRIAÇÃO DE USUÁRIO: ', error)
          return null
       }
    }
@@ -235,12 +264,13 @@ async function getUserById(id){
          }
       })
 
+      console.info("Usuário retornado: ", userData)
+
       if(userData){
          return userData
       }else{
          return false
       }
-
       
    } catch (error){
       console.error("ERRO NA BUSCA DE USUÁRIO POR ID: ", error)
@@ -252,7 +282,7 @@ async function updateUser(id, name, email, password){
    try{
       let user = await prisma.user.update({
          where: {
-            id: parseInt(id)
+            id: id
          },
          data: {
             name: name,
@@ -260,6 +290,8 @@ async function updateUser(id, name, email, password){
             password: password
          }
       })
+
+      console.info("Dados do usuário: ", user)
 
       if(user.id && user.name === name && user.email === email && user.password === password){
          return true
@@ -278,9 +310,11 @@ async function deleteUser(id){
    try{
       let user = await prisma.user.delete({
          where: {
-            id: parseInt(id)
+            id: id
          }
       })
+
+      console.info("Dados do usuário excluido: ", user)
 
       return true
 
@@ -297,23 +331,22 @@ async function createTicket(userID, title, description, channel, priority){
       description,
       channel,
       priority,
-      customerId: parseInt(userID)
+      customerId: id
    }
-
-   console.log("Dados do chamado:", ticketData)
 
    try{
       let ticket = await prisma.ticket.create({data: ticketData})
 
-      console.log(ticket)
+      console.info("Dados do ticket: ", ticket)
 
       if(ticket.id && ticket.description === description && ticket.title === title){
          return true
       }else{
          return false
       }
+
    } catch (error){
-      console.log('ERRO NA CRIAÇÃO DO CHAMADO: ', error)
+      console.error('ERRO NA CRIAÇÃO DO CHAMADO: ', error)
       return null
    }
 }
@@ -336,40 +369,46 @@ async function getTickets(){
       return ticketsData
 
    } catch (error){
-      console.log('ERRO NA BUSCA DE TICKETS DO USUÁRIO: ', error)
+      console.error('ERRO NA BUSCA DE TICKETS DO USUÁRIO: ', error)
       return null
    }
 }
 
-async function getTicketByID(ID){
+async function getTicketByID(id){
    try{
       let ticketData = await prisma.ticket.findUnique({
          where: {
-            id: parseInt(ID)
+            id: id
          },
          include: {
             customer: true
          }
       })
 
+      console.info("Dados do ticket: ", ticketData)
+
       return ticketData
 
    } catch (error){
-      console.log("ERRO NA BUSCA DO TICKET POR ID: ", error)
+      console.error("ERRO NA BUSCA DO TICKET POR ID: ", error)
       return null
    }
 }
 
-async function updateTicketStatus(id, priority, channel, status){
+async function updateTicket(id, priority, channel, status){
    try{
       let ticket = await prisma.ticket.update({
-         where: { id: parseInt(id)},
+         where: {
+            id: id
+         },
          data: {
             priority: priority,
             channel: channel,
             status: status
          }
       })
+
+      console.info("Dados do ticket: ", ticket)
 
       if(ticket.id && ticket.priority === priority && ticket.channel === channel && ticket.status === status){
          return true
@@ -378,7 +417,7 @@ async function updateTicketStatus(id, priority, channel, status){
       }
       
    } catch (error) {
-      console.log('ERRO NA ATUALIZAÇÃO DO CHAMDO: ', error)
+      console.error('ERRO NA ATUALIZAÇÃO DO CHAMDO: ', error)
       return null
    }
 }
