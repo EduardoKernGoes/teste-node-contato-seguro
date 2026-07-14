@@ -77,6 +77,57 @@ server.post("/users", async (req, res) => {
    })
 })
 
+server.get("/users", async (req, res) => {
+   let usersData = await getUsers()
+   
+   return res.status(200).json(usersData)
+})
+
+server.get("/users/:id", async (req, res) => {
+   let userID = req.params.id
+   console.log('Solicitação do usuário: ', userID)
+
+   let userData = await getUserById(userID)
+
+   if(userData === null){
+      return res.status(500).json({error: "Erro no servidor"})
+   }
+
+   return res.status(200).json(userData)
+})
+
+server.put("/users/:id", async (req, res) => {
+   let { user, email, password } = req.body
+   let userID = req.params.id
+   console.log('Solicitação de alteração do usuário: ', userID, user, email, password)
+
+   let response = await updateUser(userID, user, email, password)
+
+   if(response === null){
+      return res.status(500).json({error: "Erro no servidor ao tentar ataulizar usuário"})
+   }else if(!response){
+      return res.status(400).json({error: "Erro ao tentar ataulizar usuário, verifique os dados do mesmo."})
+   }
+
+   return res.status(200).json({message: "Usuário atualizado com sucesso!!!"})
+
+})
+
+server.delete("/users/:id", async (req, res) => {
+   let userID = req.params.id
+   console.log('Solicitação de exclusão do usuário: ', userID)
+
+   let response = await deleteUser(userID)
+
+   if(response === null){
+      return res.status(500).json({error: "Erro no servidor"})
+   }else if (response === 'P2025'){
+      return res.status(400).json({error: "Usuário não encontrado"})
+   }
+
+   return res.status(200).json({message: "usuário deletado com sucesso."})
+})
+
 server.post("/tickets", async (req, res) =>{
    const { userID, title, description } = req.body
    console.log("Dados recebidos da criação do ticket: ", userID, title, description)
@@ -114,7 +165,7 @@ server.get("/tickets/:id", async (req, res) => {
 
    let ticketData = await getTicketByID(ticketID)
 
-   return res.status(200).json({ticketData})
+   return res.status(200).json(ticketData)
 })
 
 server.put("/tickets/:id/status", async (req, res) => {
@@ -196,6 +247,76 @@ async function createUser(user, email, password){
          console.log('ERRO NA CRIAÇÃO DE USUÁRIO: ', error)
          return null
       }
+   }
+}
+
+async function getUsers(){
+   try{
+      let usersData = await prisma.user.findMany()
+
+      return usersData
+
+   } catch (error){
+      console.error('ERRO NA BUSCA DE USUÁRIOS: ', error)
+      return null
+   }
+}
+
+async function getUserById(id){
+   try{
+      let userData = await prisma.user.findUnique({
+         where: {
+            id: parseInt(id)
+         }
+      })
+
+      return userData
+      
+   } catch (error){
+      console.error("ERRO NA BUSCA DE USUÁRIO POR ID: ", error)
+      return null
+   }
+}
+
+async function updateUser(id, name, email, password){
+   try{
+      let user = await prisma.user.update({
+         where: {
+            id: parseInt(id)
+         },
+         data: {
+            name: name,
+            email: email,
+            password: password
+         }
+      })
+
+      if(user.id && user.name === name && user.email === email && user.password === password){
+         return true
+      }else{
+         return false
+      }
+      
+   } catch (error){
+      console.error('ERRO NA ATUALIZAÇÃO DO USUÁRIO: ', error)
+      return null
+   }
+}
+
+async function deleteUser(id){
+   try{
+      let user = await prisma.user.delete({
+         where: {
+            id: parseInt(id)
+         }
+      })
+
+      return true
+
+   } catch (error){
+      if(error.code === 'P2025') return error.code
+      console.error('ERRO AO TENTAR EXCLUIR USUÁRIO: ', error)
+      return null
    }
 }
 
