@@ -19,27 +19,6 @@ server.use(express.json())
 
 server.use(express.static(path.join(dirname, "public")))
 
-server.post("/login", async (req, res) => {
-   const { email, password } = req.body;
-   console.log('Dados recebidos do usuário: ', email, password);
-
-   const userData = await verifyLogin(email, password)
-
-   if(userData){
-      return res.status(200).json({
-         message: "Loggin realizado com sucesso.",
-         user: {
-            id: userData.id,
-            name: userData.name,
-            email: userData.email,
-            role: userData.role
-         }
-      })
-   }else{
-      return res.status(401).json({error: "Credenciais inválidas"})
-   }
-})
-
 server.post("/users", async (req, res) => {
    const {user, email, password, repeat_password} = req.body;
    console.log("Dados recebidos do usuário: ", user, email, password, repeat_password);
@@ -84,13 +63,20 @@ server.get("/users", async (req, res) => {
 })
 
 server.get("/users/:id", async (req, res) => {
-   let userID = req.params.id
+   let userID = parseInt(req.params.id)
+
+   if(isNaN(userID)){
+      return res.status(400).json({error: "ID inválido. O ID deve ser um número"})
+   }
+
    console.log('Solicitação do usuário: ', userID)
 
    let userData = await getUserById(userID)
 
    if(userData === null){
       return res.status(500).json({error: "Erro no servidor"})
+   }else if (!userData){
+      return res.status(400).json({error: "Este usuário não existe, tente outro ID."})
    }
 
    return res.status(200).json(userData)
@@ -103,10 +89,10 @@ server.put("/users/:id", async (req, res) => {
 
    let response = await updateUser(userID, user, email, password)
 
-   if(response === null){
-      return res.status(500).json({error: "Erro no servidor ao tentar ataulizar usuário"})
-   }else if(!response){
-      return res.status(400).json({error: "Erro ao tentar ataulizar usuário, verifique os dados do mesmo."})
+   if(!response){
+      return res.status(500).json({error: "Erro no servidor ao tentar atualizar usuário"})
+   }else if(response === 'P2002'){
+      return res.status(400).json({error: "Erro ao tentar ataulizar usuário, já existe um usuário com este e-mail."})
    }
 
    return res.status(200).json({message: "Usuário atualizado com sucesso!!!"})
@@ -125,7 +111,7 @@ server.delete("/users/:id", async (req, res) => {
       return res.status(400).json({error: "Usuário não encontrado"})
    }
 
-   return res.status(200).json({message: "usuário deletado com sucesso."})
+   return res.status(200).json({message: "Usuário excluido com sucesso."})
 })
 
 server.post("/tickets", async (req, res) =>{
@@ -201,27 +187,6 @@ server.listen(port, () => {
    console.log(`Server is running on: http://localhost:${port}`)
 })
 
-async function verifyLogin(email, password){
-   try{
-      const userData = await prisma.user.findFirst({
-         where: {
-            email: email
-         }
-      })
-
-      if(!userData || userData.password !== password){
-         return null
-      }else{
-         return userData
-      }
-
-   } catch (error){
-      console.log('ERRO NA VERIFICAÇÃO DE LOGIN: ')
-      console.log(error)
-      return null
-   }
-}
-
 async function createUser(user, email, password){
    let userData = {
       name: user,
@@ -266,11 +231,16 @@ async function getUserById(id){
    try{
       let userData = await prisma.user.findUnique({
          where: {
-            id: parseInt(id)
+            id: id
          }
       })
 
-      return userData
+      if(userData){
+         return userData
+      }else{
+         return false
+      }
+
       
    } catch (error){
       console.error("ERRO NA BUSCA DE USUÁRIO POR ID: ", error)
@@ -298,6 +268,7 @@ async function updateUser(id, name, email, password){
       }
       
    } catch (error){
+      if(error.code === 'P2002') return error.code
       console.error('ERRO NA ATUALIZAÇÃO DO USUÁRIO: ', error)
       return null
    }
