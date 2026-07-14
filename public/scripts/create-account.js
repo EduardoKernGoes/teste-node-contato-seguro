@@ -12,7 +12,7 @@ form.addEventListener('submit', async (event) => {
     let repeat_password = form.repeat_password.value
 
     try{
-        let response = await fetch('/create-account', {
+        let response = await fetch('/users', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

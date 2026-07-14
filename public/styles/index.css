@@ -1,2 +1,11 @@
 @import url('./global.css');
 @import url('./header.css');
+
+.ticket{
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 50px;
+    background: rgb(210, 210, 210);
+    padding: 10px 20px;
+    border-radius: 10px;
+}
