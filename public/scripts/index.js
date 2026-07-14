@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async (event) => {
                         let div1 = document.createElement('div')
                         let div2 = document.createElement('div')
 
-                        a.className = `${ticket.status} ticket`
+                        a.className = `ticket`
                         a.href = `/pages/ticket.html?ticketID=${ticket.id}`
                         div1.innerHTML = `
                             <h2>${ticket.title}</h2>

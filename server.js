@@ -110,6 +110,7 @@ server.get("/tickets", async (req, res) => {
 
 server.get("/tickets/:id", async (req, res) => {
    let ticketID = req.params.id
+   console.log("solicitação do ticket: ", ticketID)
 
    let ticketData = await getTicketByID(ticketID)
 
@@ -117,7 +118,32 @@ server.get("/tickets/:id", async (req, res) => {
 })
 
 server.put("/tickets/:id/status", async (req, res) => {
-   console.log("Atualizou o status do chamado")
+   const { priority, channel, status } = req.body
+   const id = req.params.id
+   console.log("Atualizou o status do chamado: ", id, priority, channel, status)
+
+   let response = await updateTicketStatus(id, priority, channel, status)
+
+   if(response === null){
+      return res.status(500).json({error: "Erro no servidor ao tentar ataulizar chamado"})
+   }else if(!response){
+      return res.status(400).json({error: "Erro ao tentar ataulizar chamado, verifique os dados do mesmo."})
+   }
+
+   return res.status(200).json({message: "Chamado atualizado com sucesso!!!"})
+})
+
+server.get("/health", async (req, res) => {
+   try{
+      await prisma.$queryRaw`SELECT 1`
+      return res.status(200).json({
+         message: "Servidor e Banco de Dados funcionando."
+      })
+   } catch (error){
+      return res.status(500).json({
+         message: "Banco de Dados indisponível"
+      })
+   }
 })
 
 server.listen(port, () => {
@@ -179,7 +205,6 @@ async function createTicket(userID, title, description, channel, priority){
       description,
       channel,
       priority,
-      status: "OPEN",
       customerId: parseInt(userID)
    }
 
@@ -204,6 +229,9 @@ async function createTicket(userID, title, description, channel, priority){
 async function getTickets(){
    try{
       let ticketsData = await prisma.ticket.findMany({
+         orderBy: {
+            createdAt: 'desc'
+         },
          include: {
             customer: {
                select: {
@@ -236,6 +264,29 @@ async function getTicketByID(ID){
 
    } catch (error){
       console.log("ERRO NA BUSCA DO TICKET POR ID: ", error)
+      return null
+   }
+}
+
+async function updateTicketStatus(id, priority, channel, status){
+   try{
+      let ticket = await prisma.ticket.update({
+         where: { id: parseInt(id)},
+         data: {
+            priority: priority,
+            channel: channel,
+            status: status
+         }
+      })
+
+      if(ticket.id && ticket.priority === priority && ticket.channel === channel && ticket.status === status){
+         return true
+      }else{
+         return false
+      }
+      
+   } catch (error) {
+      console.log('ERRO NA ATUALIZAÇÃO DO CHAMDO: ', error)
       return null
    }
 }
