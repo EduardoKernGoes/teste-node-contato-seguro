@@ -78,12 +78,16 @@ export async function updateTicketController(req, res){
         const { priority, channel, status } = req.body
         const ticketID = parseInt(req.params.id)
 
-        if(isNaN(ticketID)){
+        if(!ticketID || isNaN(ticketID)){
             return res.status(400).json({error: "ID inválido"})
         }
 
-        if(!priority || !channel || !status){
-            return res.status(400).json({error: "O ticket não pode conter campos em branco"})
+        if(priority && (priority !== 'LOW' && priority !== 'MEDIUM' && priority !== 'HIGH')){
+            return res.status(400).json({error: "Nível de prioridade inválido"})
+        }
+
+        if(channel && (channel !== 'fora_do_escopo' && channel !== 'financeiro' && channel !== 'suporte_tecnico' && channel !== 'sac' && channel !== 'ouvidoria')){
+            return res.status(400).json({error: "Canal inválido"})
         }
 
         console.info("[TicketController] Dados de atualização do ticket: ", ticketID, priority, channel, status)
