@@ -8,7 +8,7 @@ import {
 
 export async function createUserController(req, res) {
     try{
-        const { user, email, password, repeat_password } = req.body
+        const { user, email, password, repeat_password, role } = req.body
 
         if(!user || !email || !password || !repeat_password){
             return res.status(400).json({error: "O formulário não pode ter campos vazios"})
@@ -16,11 +16,13 @@ export async function createUserController(req, res) {
             return res.status(400).json({error: "Senhas não coincidem"})
         }else if(!email.includes('@')){
             return res.status(400).json({error: "E-mail inválido"})
+        }else if(role && (role !== 'ADMIN' && role !== 'CLIENT')){
+            return res.status(400).json({error: "Cargo inválido."})
         }
 
-        console.info("Dados de criação do usuário: ", user, email, password, repeat_password)
+        console.info("Dados de criação do usuário: ", user, email, password, repeat_password, role)
 
-        const userData = await createUserService(user, email, password)
+        const userData = await createUserService(user, email, password, role)
 
         return res.status(201).json({
             message: "Usuário criado com sucesso!",
@@ -77,18 +79,20 @@ export async function getuserByIdController(req, res){
 
 export async function updateUserController(req, res){
     try{
-        const { user, email, password } = req.body
+        const { user, email, password, role } = req.body
         const userID = parseInt(req.params.id)
 
         if(isNaN(userID)){
             return res.status(400).json({error: "ID inválido"})
-        }else if(!user || !email || !password){
-            return res.status(400).json({error: "Nenhum dos campos pode estar em branco."})
+        }else if(!email.includes('@')){
+            return res.status(400).json({error: "Endereço de e-mail inválido"})
+        }else if(role && (role !== 'ADMIN' && role !== 'CLIENT')){
+            return res.status(400).json({error: "Cargo inválido"})
         }
 
-        console.info("Dados de atualização do usuário: ", userID, user, email, password)
+        console.info("Dados de atualização do usuário: ", userID, user, email, password, role)
 
-        const userData = await updateUserService(userID, user, email, password)
+        const userData = await updateUserService(userID, user, email, password, role)
 
         return res.status(200).json({
             message: "Usuário alterado com sucesso!",
