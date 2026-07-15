@@ -25,6 +25,30 @@ const ticketDataHigh: testTicket = {
 
 describe("Testes de Tickets", () => {
 
+    beforeAll(async () => {
+        const user = await prisma.user.create({
+            data: {
+                name: "Usuário Teste Tickets",
+                email: "ticket_test@contatoseguro.com",
+                password: "123",
+                role: "CLIENT"
+            }
+        });
+
+        ticketDataLow.userID = user.id;
+        ticketDataHigh.userID = user.id;
+    });
+
+    afterAll(async () => {
+        if (ticketDataLow.ticketID) {
+            await prisma.ticket.delete({ where: { id: ticketDataLow.ticketID } }).catch(() => {});
+        }
+        if (ticketDataHigh.ticketID) {
+            await prisma.ticket.delete({ where: { id: ticketDataHigh.ticketID } }).catch(() => {});
+        }
+        await prisma.$disconnect();
+    });
+
     describe("Testes Unitários", () => {
         it("Lógica de Triagem - Deve classificar como 'ouvidoria' e 'HIGH'", () => {
             const res = classifyPriorityChannel("Estou sofrendo uma fraude");
