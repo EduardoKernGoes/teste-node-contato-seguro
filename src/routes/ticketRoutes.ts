@@ -1,21 +1,16 @@
-import express from 'express';
+import express, { Router } from 'express';
 import {
     createTicketController,
     getTicketsController,
     getTicketByIdController,
     updateTicketController
-} from '../controllers/ticketController.js';
+} from '../controllers/ticketController';
 
-const ticketRouter = express.Router();
+const ticketRouter: Router = express.Router();
 
-// Quando bater um POST na raiz dessa rota, chama o Controller
 ticketRouter.post('/', createTicketController);
 ticketRouter.get('/', getTicketsController);
 ticketRouter.get('/:id', getTicketByIdController);
 ticketRouter.put('/:id/status', updateTicketController);
-
-// Aqui você colocaria as outras:
-// ticketRouter.get('/', getTicketsController);
-// ticketRouter.get('/:id', getTicketByIdController);
 
 export default ticketRouter;
