@@ -28,6 +28,9 @@ export async function createTicketController(req: Request, res: Response) {
         })
 
     } catch (error: any) {
+        if(error.code === 'P2003'){
+            return res.status(400).json({error: "Usuário não encontrado."})
+        }
         console.error("[TicketController] Erro ao criar ticket: ", error)
         return res.status(500).json({error: "Erro interno no servidor"})
     }
