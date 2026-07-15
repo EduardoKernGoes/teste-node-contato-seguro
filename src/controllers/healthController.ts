@@ -1,7 +1,8 @@
-import { calculateTicketHealth } from "../utils/ticketHealth.js";
-import { getTicketByIdService } from "../services/ticketService.js";
+import { Request, Response} from 'express';
+import { calculateTicketHealth } from "../utils/ticketHealth";
+import { getTicketByIdService } from "../services/ticketService";
 
-export async function getTicketHealthController(req, res){
+export async function getTicketHealthController(req: Request, res: Response){
     try{
         const { id } = req.query
 
@@ -9,7 +10,7 @@ export async function getTicketHealthController(req, res){
             return res.status(400).json({error: "ID do ticket não informado na URL"})
         }
 
-        const ticketID = parseInt(id)
+        const ticketID = parseInt(id as string)
 
         if(isNaN(ticketID)){
             return res.status(400).json({error: "ID inválido"})
@@ -31,7 +32,7 @@ export async function getTicketHealthController(req, res){
             health: ticketHealth
         })
         
-    } catch (error) {
+    } catch (error: any) {
         console.error("[HealthController] Erro ao buscar tempo de vida do ticket: ", error)
         return res.status(500).json({error: "Erro interno no servidor"})
     }

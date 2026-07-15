@@ -1,9 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import { classifyPriorityChannel } from "../utils/classifyTickets.js";
+import { classifyPriorityChannel } from "../utils/classifyTickets";
 
 const prisma = new PrismaClient()
 
-export async function createTicketService(customerId, title, description){
+export async function createTicketService(customerId: number, title: string, description: string){
     const { channel, priority } = classifyPriorityChannel(description)
 
     console.info("[TicketService] Dados da criação do ticket: ", customerId, title, description, channel, priority)
@@ -34,7 +34,7 @@ export async function getTicketsService(){
     return tickets
 }
 
-export async function getTicketByIdService(id){
+export async function getTicketByIdService(id: number){
     const ticket = await prisma.ticket.findUnique({
         where: {
             id
@@ -47,7 +47,7 @@ export async function getTicketByIdService(id){
     return ticket
 }
 
-export async function updateTicketService(id, priority, channel, status) {
+export async function updateTicketService(id: number, priority: string, channel: string, status: string) {
     const ticket = await prisma.ticket.update({
         where: {
             id 

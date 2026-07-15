@@ -1,4 +1,10 @@
-const triage_roles = [
+interface triageRole {
+   channel: string;
+   priority: string;
+   keywords: string[];
+}
+
+const triage_roles: triageRole[] = [
    {
       channel: 'ouvidoria',
       priority: 'HIGH',
@@ -23,7 +29,7 @@ const triage_roles = [
 
 
 
-export function classifyPriorityChannel(description){
+export function classifyPriorityChannel(description: string): { channel: string; priority: string}{
    let desc = description.toLowerCase()
 
    // Classificação simples através de paalvras chaves dentro da descrição do chamado, utilizei as palavras chave passadas no teste mas poderiam ser utilizadas outras palavras.

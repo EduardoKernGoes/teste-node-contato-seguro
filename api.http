@@ -1,0 +1,87 @@
+@baseUrl = http://localhost:3000
+
+### ================= USUÁRIOS =================
+
+### Criar Usuário (ADMIN) (POST -> /users)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+    "user": "Teste HTTP",
+    "email": "teste_http@contatoseguro.com",
+    "password": "senhaForte123",
+    "repeat_password": "senhaForte123",
+    "role": "ADMIN"
+}
+
+### Criar Usuário (CLIENT) (POST -> /users)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+    "user": "Teste HTTP",
+    "email": "teste_http1@contatoseguro.com",
+    "password": "senhaForte123",
+    "repeat_password": "senhaForte123"
+}
+
+### Listar Usuários (GET -> /users)
+GET {{baseUrl}}/users
+
+### Buscar Usuário por ID (GET -> /users/:id)
+GET {{baseUrl}}/users/1
+
+### Atualizar Usuário (PUT -> /users/:id)
+PUT {{baseUrl}}/users/1
+Content-Type: application/json
+
+{
+    "user": "Teste HTTP Editado",
+    "email": "teste_http2@contatoseguro.com",
+    "password": "novaSenha321"
+}
+
+### Deletar Usuário (DELETE -> /users/:id)
+DELETE {{baseUrl}}/users/1
+
+
+### ================= TICKETS =================
+
+### Criar Ticket (Ouvidoria/HIGH) (POST -> /tickets)
+POST {{baseUrl}}/tickets
+Content-Type: application/json
+
+{
+    "userID": 3,
+    "title": "Atividade Suspeita",
+    "description": "Quero fazer uma denúncia de fraude envolvendo um pagamento."
+}
+
+### Criar Ticket (Fora do Escopo/LOW) (POST -> /tickets)
+POST {{baseUrl}}/tickets
+Content-Type: application/json
+
+{
+    "userID": 3,
+    "title": "Quero ajuda",
+    "description": "Preciso de ajuda, alguém pode me atender?"
+}
+
+### Listar Tickets (GET -> /tickets)
+GET {{baseUrl}}/tickets
+
+### Buscar Ticket por ID (GET -> /tickets/:id)
+GET {{baseUrl}}/tickets/4
+
+### Atualizar Status do Ticket (PUT -> /tickets/:id/status)
+PUT {{baseUrl}}/tickets/4/status
+Content-Type: application/json
+
+{
+    "priority": "MEDIUM",
+    "channel": "financeiro",
+    "status": "Em andamento"
+}
+
+### Verificar Tempo de Vida/Saúde do Ticket (GET -> /health)
+GET {{baseUrl}}/health?id=6

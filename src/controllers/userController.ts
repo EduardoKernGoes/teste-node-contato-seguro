@@ -1,14 +1,15 @@
+import { Request, Response } from "express";
 import {
     createUserService,
     getUsersService,
     getUserByIdService,
     updateUserService,
     deleteUserService
-} from "../services/userService.js";
+} from "../services/userService";
 
-export async function createUserController(req, res) {
+export async function createUserController(req: Request, res: Response) {
     try{
-        const { user, email, password, repeat_password } = req.body
+        const { user, email, password, repeat_password, role } = req.body
 
         if(!user || !email || !password || !repeat_password){
             return res.status(400).json({error: "O formulário não pode ter campos vazios"})
@@ -16,18 +17,20 @@ export async function createUserController(req, res) {
             return res.status(400).json({error: "Senhas não coincidem"})
         }else if(!email.includes('@')){
             return res.status(400).json({error: "E-mail inválido"})
+        }else if(role && (role !== 'ADMIN' && role !== 'CLIENT')){
+            return res.status(400).json({error: "Cargo inválido."})
         }
 
-        console.info("Dados de criação do usuário: ", user, email, password, repeat_password)
+        console.info("Dados de criação do usuário: ", user, email, password, repeat_password, role)
 
-        const userData = await createUserService(user, email, password)
+        const userData = await createUserService(user, email, password, role)
 
         return res.status(201).json({
             message: "Usuário criado com sucesso!",
             user: userData
         })
 
-    } catch (error) {
+    } catch (error: any) {
         if(error.code === 'P2002'){
             return res.status(400).json({error: "Este endereço de e-mail já existe."})
         }
@@ -35,7 +38,8 @@ export async function createUserController(req, res) {
         return res.status(500).json({error: "Erro interno no servidor"})
     }
 }
-export async function getUsersController(req , res) {
+
+export async function getUsersController(req: Request, res: Response) {
     try {
         const usersData = await getUsersService();
 
@@ -43,15 +47,15 @@ export async function getUsersController(req , res) {
             message: "Busca de usuários concluida com sucesso!",
             users: usersData
         })
-    } catch (error) {
+    } catch (error: any) {
         console.error("[UserController] Erro na busca de usuários: ", error)
         return res.status(500).json({error: "Erro interno do servidor"})
     }
 }
 
-export async function getuserByIdController(req, res){
+export async function getuserByIdController(req: Request, res: Response){
     try{
-        const userID = parseInt(req.params.id)
+        const userID = parseInt(req.params.id as string)
 
         if(isNaN(userID)){
             return res.status(400).json({error: "ID inválido"})
@@ -69,33 +73,35 @@ export async function getuserByIdController(req, res){
             message: "Usuário encontrado com sucesso!",
             user: userData
         })
-    } catch (error) {
+    } catch (error: any) {
         console.error("[UserController] Erro na busca de usuário por ID: ", error)
         return res.status(500).json({error: "Erro interno do servidor"})
     }
 } 
 
-export async function updateUserController(req, res){
+export async function updateUserController(req: Request, res: Response){
     try{
-        const { user, email, password } = req.body
-        const userID = parseInt(req.params.id)
+        const { user, email, password, role } = req.body
+        const userID = parseInt(req.params.id as string)
 
         if(isNaN(userID)){
             return res.status(400).json({error: "ID inválido"})
-        }else if(!user || !email || !password){
-            return res.status(400).json({error: "Nenhum dos campos pode estar em branco."})
+        }else if(!email.includes('@')){
+            return res.status(400).json({error: "Endereço de e-mail inválido"})
+        }else if(role && (role !== 'ADMIN' && role !== 'CLIENT')){
+            return res.status(400).json({error: "Cargo inválido"})
         }
 
-        console.info("Dados de atualização do usuário: ", userID, user, email, password)
+        console.info("Dados de atualização do usuário: ", userID, user, email, password, role)
 
-        const userData = await updateUserService(userID, user, email, password)
+        const userData = await updateUserService(userID, user, email, password, role)
 
         return res.status(200).json({
             message: "Usuário alterado com sucesso!",
             user: userData
         })
 
-    } catch (error){
+    } catch (error: any){
         if(error.code === 'P2002'){
             return res.status(400).json({error: "Este endereço de e-mail já está em uso"})
         }
@@ -104,9 +110,9 @@ export async function updateUserController(req, res){
     }
 }
 
-export async function deleteUserController(req, res){
+export async function deleteUserController(req: Request, res: Response){
     try{
-        const userID = parseInt(req.params.id)
+        const userID = parseInt(req.params.id as string)
 
         if(isNaN(userID)){
             return res.status(400).json({error: "ID inválido"})
@@ -123,7 +129,7 @@ export async function deleteUserController(req, res){
             user: userData
         })
 
-    } catch (error) {
+    } catch (error: any) {
         if(error.code === 'P2025'){
             return res.status(400).json({error: "Usuário não encontrado"})
         }
