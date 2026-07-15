@@ -1,7 +1,0 @@
-@import url('./global.css');
-@import url('./header.css');
-
-form div{
-    display: flex;
-    flex-direction: column;
-}
