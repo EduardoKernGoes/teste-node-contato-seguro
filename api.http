@@ -71,10 +71,10 @@ Content-Type: application/json
 GET {{baseUrl}}/tickets
 
 ### Buscar Ticket por ID (GET -> /tickets/:id)
-GET {{baseUrl}}/tickets/4
+GET {{baseUrl}}/tickets/3
 
 ### Atualizar Status do Ticket (PUT -> /tickets/:id/status)
-PUT {{baseUrl}}/tickets/4/status
+PUT {{baseUrl}}/tickets/3/status
 Content-Type: application/json
 
 {
@@ -84,4 +84,4 @@ Content-Type: application/json
 }
 
 ### Verificar Tempo de Vida/Saúde do Ticket (GET -> /health)
-GET {{baseUrl}}/health?id=6
+GET {{baseUrl}}/health?id=3
