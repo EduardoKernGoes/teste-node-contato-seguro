@@ -2,7 +2,16 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient()
 
-const userAdmin = {
+type testUser = {
+    user: string;
+    email: string;
+    password: string;
+    repeat_password: string;
+    role?: string;
+    id?: number;
+}
+
+const userAdmin: testUser = {
     user: "Teste Admin Jest",
     email: "teste_admin_jest@contatoseguro.com",
     password: "senhaForte123",
@@ -10,7 +19,7 @@ const userAdmin = {
     role: "ADMIN"
 }
 
-const userClient = {
+const userClient: testUser = {
     user: "Teste Jest",
     email: "teste_jest@contatoseguro.com",
     password: "senhaForte123",
@@ -140,7 +149,7 @@ describe("Testes Banco de Dados - Tabela Usuários", () =>{
     afterAll(async () =>{
         await prisma.user.delete({
             where: {
-                id: userClient.id
+                id: userClient.id as number
             }
         })
         await prisma.$disconnect()

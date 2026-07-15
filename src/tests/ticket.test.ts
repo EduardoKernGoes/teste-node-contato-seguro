@@ -4,13 +4,20 @@ import { calculateTicketHealth } from "../utils/ticketHealth";
 
 const prisma = new PrismaClient();
 
-const ticketDataLow = {
+type testTicket = {
+    userID: number;
+    title: string;
+    description: string;
+    ticketID?: number;
+}
+
+const ticketDataLow: testTicket = {
     userID: 1,
     title: "Ticket de Teste Jest",
     description: "Ticket de teste feito através do Jest, não contém nenhum apalavra chave"
 }
 
-const ticketDataHigh = {
+const ticketDataHigh: testTicket = {
     userID: 1,
     title: "Ticket de Teste Jest",
     description: "Ticket de teste feito através do Jest, com a palavra chave denuncia"

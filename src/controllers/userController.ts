@@ -1,12 +1,13 @@
+import { Request, Response } from "express";
 import {
     createUserService,
     getUsersService,
     getUserByIdService,
     updateUserService,
     deleteUserService
-} from "../services/userService.js";
+} from "../services/userService";
 
-export async function createUserController(req, res) {
+export async function createUserController(req: Request, res: Response) {
     try{
         const { user, email, password, repeat_password, role } = req.body
 
@@ -29,7 +30,7 @@ export async function createUserController(req, res) {
             user: userData
         })
 
-    } catch (error) {
+    } catch (error: any) {
         if(error.code === 'P2002'){
             return res.status(400).json({error: "Este endereço de e-mail já existe."})
         }
@@ -37,7 +38,8 @@ export async function createUserController(req, res) {
         return res.status(500).json({error: "Erro interno no servidor"})
     }
 }
-export async function getUsersController(req , res) {
+
+export async function getUsersController(req: Request, res: Response) {
     try {
         const usersData = await getUsersService();
 
@@ -45,15 +47,15 @@ export async function getUsersController(req , res) {
             message: "Busca de usuários concluida com sucesso!",
             users: usersData
         })
-    } catch (error) {
+    } catch (error: any) {
         console.error("[UserController] Erro na busca de usuários: ", error)
         return res.status(500).json({error: "Erro interno do servidor"})
     }
 }
 
-export async function getuserByIdController(req, res){
+export async function getuserByIdController(req: Request, res: Response){
     try{
-        const userID = parseInt(req.params.id)
+        const userID = parseInt(req.params.id as string)
 
         if(isNaN(userID)){
             return res.status(400).json({error: "ID inválido"})
@@ -71,16 +73,16 @@ export async function getuserByIdController(req, res){
             message: "Usuário encontrado com sucesso!",
             user: userData
         })
-    } catch (error) {
+    } catch (error: any) {
         console.error("[UserController] Erro na busca de usuário por ID: ", error)
         return res.status(500).json({error: "Erro interno do servidor"})
     }
 } 
 
-export async function updateUserController(req, res){
+export async function updateUserController(req: Request, res: Response){
     try{
         const { user, email, password, role } = req.body
-        const userID = parseInt(req.params.id)
+        const userID = parseInt(req.params.id as string)
 
         if(isNaN(userID)){
             return res.status(400).json({error: "ID inválido"})
@@ -99,7 +101,7 @@ export async function updateUserController(req, res){
             user: userData
         })
 
-    } catch (error){
+    } catch (error: any){
         if(error.code === 'P2002'){
             return res.status(400).json({error: "Este endereço de e-mail já está em uso"})
         }
@@ -108,9 +110,9 @@ export async function updateUserController(req, res){
     }
 }
 
-export async function deleteUserController(req, res){
+export async function deleteUserController(req: Request, res: Response){
     try{
-        const userID = parseInt(req.params.id)
+        const userID = parseInt(req.params.id as string)
 
         if(isNaN(userID)){
             return res.status(400).json({error: "ID inválido"})
@@ -127,7 +129,7 @@ export async function deleteUserController(req, res){
             user: userData
         })
 
-    } catch (error) {
+    } catch (error: any) {
         if(error.code === 'P2025'){
             return res.status(400).json({error: "Usuário não encontrado"})
         }

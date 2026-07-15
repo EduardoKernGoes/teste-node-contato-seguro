@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient()
 
-export async function createUserService(name, email, password, role) {
+export async function createUserService(name: string, email: string, password: string, role: string) {
     const user = await prisma.user.create({
         data: {
             name,
@@ -28,7 +28,7 @@ export async function getUsersService(){
     return users
 }
 
-export async function getUserByIdService(id){
+export async function getUserByIdService(id: number){
     const user = await prisma.user.findUnique({
         where: {
             id
@@ -44,7 +44,7 @@ export async function getUserByIdService(id){
     return user
 }
 
-export async function updateUserService(id, name, email, password, role){
+export async function updateUserService(id: number, name: string, email: string, password: string, role: string){
     const user = await prisma.user.update({
         where: {
             id
@@ -60,7 +60,7 @@ export async function updateUserService(id, name, email, password, role){
     return user;
 }
 
-export async function deleteUserService(id){
+export async function deleteUserService(id: number){
     const user = await prisma.user.delete({
         where:{
             id

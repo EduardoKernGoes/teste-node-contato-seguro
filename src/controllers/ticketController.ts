@@ -1,11 +1,12 @@
+import { Request, Response } from "express";
 import {
     createTicketService,
     getTicketsService,
     getTicketByIdService,
     updateTicketService
-} from "../services/ticketService.js";
+} from "../services/ticketService";
 
-export async function createTicketController(req, res) {
+export async function createTicketController(req: Request, res: Response) {
     try {
         const { userID, title, description } = req.body
 
@@ -26,13 +27,16 @@ export async function createTicketController(req, res) {
             ticket: newTicket
         })
 
-    } catch (error) {
+    } catch (error: any) {
+        if(error.code === 'P2003'){
+            return res.status(400).json({error: "Usuário não encontrado."})
+        }
         console.error("[TicketController] Erro ao criar ticket: ", error)
         return res.status(500).json({error: "Erro interno no servidor"})
     }
 }
 
-export async function getTicketsController(req, res){
+export async function getTicketsController(req: Request, res: Response){
     try{
         const ticketsData = await getTicketsService()
 
@@ -40,15 +44,16 @@ export async function getTicketsController(req, res){
             message: "Chamados buscados com sucesso!",
             tickets: ticketsData
         })
-    } catch (error) {
+
+    } catch (error: any) {
         console.error("[TicketController] Erro ao buscar tickets: ", error)
         return res.status(500).json({error: "Erro interno no servidor"})
     }
 }
 
-export async function getTicketByIdController(req, res){
+export async function getTicketByIdController(req: Request, res: Response){
     try{
-        const ticketID = parseInt(req.params.id)
+        const ticketID = parseInt(req.params.id as string)
 
         if(isNaN(ticketID)){
             return res.status(400).json({error: "ID inválido"})
@@ -67,16 +72,16 @@ export async function getTicketByIdController(req, res){
             ticket: ticketData
         })
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("[TicketController] Erro ao buscar ticket por ID: ", error)
         return res.status(500).json({error: "Erro interno no servidor"})
     }
 }
 
-export async function updateTicketController(req, res){
+export async function updateTicketController(req: Request, res: Response){
     try {
         const { priority, channel, status } = req.body
-        const ticketID = parseInt(req.params.id)
+        const ticketID = parseInt(req.params.id as string)
 
         if(!ticketID || isNaN(ticketID)){
             return res.status(400).json({error: "ID inválido"})
@@ -98,7 +103,7 @@ export async function updateTicketController(req, res){
             message: "Ticket atualizado com sucesso!",
             ticket: ticketData
         })
-    } catch (error) {
+    } catch (error: any) {
         if(error.code === 'P2025'){
             return res.status(404).json({error: "Ticket não encontrado"})
         }
