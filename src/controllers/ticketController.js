@@ -1,4 +1,9 @@
-import { createTicketService } from "../services/ticketService.js";
+import {
+    createTicketService,
+    getTicketsService,
+    getTicketByIdService,
+    updateTicketService
+} from "../services/ticketService.js";
 
 export async function createTicketController(req, res) {
     try {
@@ -23,6 +28,77 @@ export async function createTicketController(req, res) {
 
     } catch (error) {
         console.error("[TicketController] Erro ao criar ticket: ", error)
+        return res.status(500).json({error: "Erro interno no servidor"})
+    }
+}
+
+export async function getTicketsController(req, res){
+    try{
+        const ticketsData = await getTicketsService()
+
+        return res.status(200).json({
+            message: "Chamados buscados com sucesso!",
+            tickets: ticketsData
+        })
+    } catch (error) {
+        console.error("[TicketController] Erro ao buscar tickets: ", error)
+        return res.status(500).json({error: "Erro interno no servidor"})
+    }
+}
+
+export async function getTicketByIdController(req, res){
+    try{
+        const ticketID = parseInt(req.params.id)
+
+        if(isNaN(ticketID)){
+            return res.status(400).json({error: "ID inválido"})
+        }
+
+        console.info("[TicketController] Solicitação do ticket: ", ticketID)
+
+        const ticketData = await getTicketByIdService(ticketID)
+
+        if(!ticketData){
+            return res.status(404).json({error: "Ticket não encontrado."})
+        }
+
+        return res.status(200).json({
+            message: "Ticket buscado com sucesso",
+            ticket: ticketData
+        })
+
+    } catch (error) {
+        console.error("[TicketController] Erro ao buscar ticket por ID: ", error)
+        return res.status(500).json({error: "Erro interno no servidor"})
+    }
+}
+
+export async function updateTicketController(req, res){
+    try {
+        const { priority, channel, status } = req.body
+        const ticketID = parseInt(req.params.id)
+
+        if(isNaN(ticketID)){
+            return res.status(400).json({error: "ID inválido"})
+        }
+
+        if(!priority || !channel || !status){
+            return res.status(400).json({error: "O ticket não pode conter campos em branco"})
+        }
+
+        console.info("[TicketController] Dados de atualização do ticket: ", ticketID, priority, channel, status)
+
+        const ticketData = await updateTicketService(ticketID, priority, channel, status)
+
+        return res.status(200).json({
+            message: "Ticket atualizado com sucesso!",
+            ticket: ticketData
+        })
+    } catch (error) {
+        if(error.code === 'P2025'){
+            return res.status(404).json({error: "Ticket não encontrado"})
+        }
+        console.error("[TicketController] Erro na atualização do ticket: ", error)
         return res.status(500).json({error: "Erro interno no servidor"})
     }
 }
